@@ -112,14 +112,6 @@ public class RoleServiceImpl implements IRoleService{
         return updateRole(role);
     }
 
-    private boolean isAppUserExisted(AppUser appUser){
-        for (AppUser user: appUser.getRole().getAppUsers()) {
-            if (appUser.getAppUserId() == user.getAppUserId())
-                return true;
-        }
-        return false;
-    }
-
     public int addAppUserRequest(AppUserRequest appUserRequest) {
 
         if (appUserRequest.appUser != null && appUserRequest.appUser.getRole() != null) {
