@@ -1,6 +1,7 @@
 package com.employee.springbootemployeerestful.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import javax.persistence.*;
@@ -29,6 +30,10 @@ public class AppUser {
     @Column(name = "IsSuperAdmin", nullable = false)
     private boolean isSuperAdmin;
 
+    @JsonProperty("isSuperAdmin")
+    public boolean getIsSuperAdmin() {
+        return this.isSuperAdmin;
+    }
 
     @JsonIgnore
     @ManyToOne

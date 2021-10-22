@@ -114,10 +114,13 @@ public class RoleServiceImpl implements IRoleService{
 
     public int addAppUserRequest(AppUserRequest appUserRequest) {
 
-        if (appUserRequest.appUser != null && appUserRequest.appUser.getRole() != null) {
-            Role role = roleRepository.findRoleByRoleId(appUserRequest.appUser.getRole().getRoleId());
+        if (appUserRequest.appUser != null && appUserRequest.role != null) {
+            Role role = roleRepository.findRoleByRoleId(appUserRequest.role.getRoleId());
+            AppUser newAppUser = appUserRepository.findAppUsersByUsername(appUserRequest.appUser.getUsername());
+            newAppUser.setRole(role);
+            appUserRepository.save(newAppUser);
 
-            role.setAppUsers(appUserRequest.appUser.getRole().getAppUsers().stream().map(
+            role.setAppUsers(appUserRequest.role.getAppUsers().stream().map(
                     roleAppUser -> {
                         AppUser appUser = roleAppUser;
                         if (appUser.getAppUserId() > 0 ) {
@@ -128,8 +131,13 @@ public class RoleServiceImpl implements IRoleService{
                         return appUser;
                     }).collect(Collectors.toList())
             );
-
             return updateRole(role);
+        }
+
+        if (appUserRequest.appUser != null && appUserRequest.role == null) {
+            AppUser newAppUser = appUserRepository.findAppUsersByUsername(appUserRequest.appUser.getUsername());
+            newAppUser.setRole(null);
+            appUserRepository.save(newAppUser);
 
         }
         return 0;
@@ -137,10 +145,12 @@ public class RoleServiceImpl implements IRoleService{
 
     public int updateAppUserRequest(AppUserRequest appUserRequest) {
         AppUser appUser = appUserRepository.findAppUsersByAppUserId(appUserRequest.appUser.getAppUserId());
-        if (appUser != null && appUser.getRole() != null) {
-            Role role = roleRepository.findRoleByRoleId(appUser.getRole().getRoleId());
+        if (appUser != null && appUserRequest.role != null) {
+            Role role = roleRepository.findRoleByRoleId(appUserRequest.role.getRoleId());
+            appUser.setRole(role);
+            appUserRepository.save(appUser);
 
-            role.setAppUsers(appUserRequest.appUser.getRole().getAppUsers().stream().map(
+            role.setAppUsers(appUserRequest.role.getAppUsers().stream().map(
                     roleAppUser -> {
                         AppUser appUserInRole = roleAppUser;
                         if (appUserInRole.getAppUserId() > 0 ) {
@@ -154,6 +164,23 @@ public class RoleServiceImpl implements IRoleService{
 
             return updateRole(role);
 
+        }
+
+        if (appUserRequest.appUser != null && appUserRequest.role == null) {
+
+            if (appUser.getRole() != null) {
+                Role role = appUser.getRole();
+                for (AppUser user : role.getAppUsers()) {
+                    if (user.getUsername().equals(appUserRequest.appUser.getUsername())) {
+                        role.getAppUsers().remove(appUser);
+                        roleRepository.save(role);
+                    }
+                }
+            }
+
+            appUser.setRole(null);
+            appUserRepository.save(appUser);
+            return 1;
         }
         return 0;
     }

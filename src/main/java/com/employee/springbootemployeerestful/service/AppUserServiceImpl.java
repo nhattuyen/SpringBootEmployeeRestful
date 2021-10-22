@@ -134,7 +134,7 @@ public class AppUserServiceImpl implements IAppUserService{
         AppUser appUser = null;
         appUser = appUserRepository.findAppUsersByAppUserId(appUserRequest.appUser.getAppUserId());
         if (appUserRequest != null && appUserRequest.appUserId != 0) {
-            appUserRepository.save(appUser);
+            appUserRepository.save(appUserRequest.appUser);
             return appUserRequest;
         }
         return null;

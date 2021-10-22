@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -26,12 +27,22 @@ public class AppUserRESTController {
 
     @RequestMapping(value = "/appusers", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @ResponseBody
-    public List<AppUser> getAppUsers() {
+    public List<AppUserRequest> getAppUsers() {
         List<AppUser> appUserList = (List<AppUser>) appUserService.getAll();
+        List<AppUserRequest> appUserRequestList = new ArrayList<AppUserRequest>();
+
+        for (AppUser appUser : appUserList) {
+            AppUserRequest appUserRequest = new AppUserRequest();
+            appUserRequest.appUserId = appUser.getAppUserId();
+            appUserRequest.appUser = appUser;
+            appUserRequest.role = appUser.getRole();
+            appUserRequestList.add(appUserRequest);
+        }
+
         if (appUserList.isEmpty()){
             return null;
         }
-        return appUserList;
+        return appUserRequestList;
     }
 
     @RequestMapping(value = "/appuser/{appUserId}", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -67,7 +78,7 @@ public class AppUserRESTController {
             return null;
         } else {
             appUserService.addAppUserRequest(appUserRequest);
-            if (appUserRequest.appUser.getRole() != null) {
+            if (appUserRequest.role != null) {
                 roleService.addAppUserRequest(appUserRequest);
             }
             return appUserRequest;
@@ -80,9 +91,7 @@ public class AppUserRESTController {
         AppUser aU = appUserService.getOneAppUserByUsername(appUserRequest.appUser.getUsername());
         if(aU != null) {
             appUserService.updateAppUserRequest(appUserRequest);
-            if (appUserRequest.appUser.getRole() != null) {
-                roleService.addAppUserRequest(appUserRequest);
-            }
+            roleService.updateAppUserRequest(appUserRequest);
             System.out.println("The AppUser "+appUserRequest.appUser.getUsername()+"has been updated.");
             return appUserRequest;
         } else {
